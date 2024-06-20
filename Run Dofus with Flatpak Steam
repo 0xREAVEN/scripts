@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Chemin vers Proton Experimental pour l'installation Steam Flatpak
+PROTON_VERSION="Proton - Experimental"
+STEAM_ROOT="$HOME/.var/app/com.valvesoftware.Steam/.steam"
+PROTON="$STEAM_ROOT/steam/steamapps/common/$PROTON_VERSION/proton"
+
+# Chemins nécessaires pour Proton
+COMPAT_DATA_PATH="$STEAM_ROOT/steam/steamapps/compatdata/dofus"
+STEAM_COMPAT_CLIENT_INSTALL_PATH="$STEAM_ROOT/steam"
+INSTALL_DIR="$HOME/.config/Ankama/Dofus"
+
+# Crée le répertoire de compatibilité s'il n'existe pas
+mkdir -p "$COMPAT_DATA_PATH"
+
+# Variables d'environnement pour Proton
+export STEAM_COMPAT_DATA_PATH="$COMPAT_DATA_PATH"
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="$STEAM_COMPAT_CLIENT_INSTALL_PATH"
+export PROTON_LOG=1
+export PROTON_LOG_DIR="$HOME"
+
+# Définir les chemins pour Dofus
+DOFUS_EXE="$INSTALL_DIR/Dofus.exe"
+ZAAP_PORT=${ZAAP_PORT:-5555}
+ZAAP_GAME=${ZAAP_GAME:-dofus}
+ZAAP_RELEASE=${ZAAP_RELEASE:-main}
+ZAAP_INSTANCE_ID=${ZAAP_INSTANCE_ID:-1}
+ZAAP_HASH=${ZAAP_HASH:-123456}
+ZAAP_CAN_AUTH=${ZAAP_CAN_AUTH:-1}
+
+# Supprimer le dossier "cinematics" pour éviter les plantages
+GFX_DIR="$INSTALL_DIR/content/gfx"
+CINEMATICS_DIR="$GFX_DIR/cinematics"
+
+if [ -d "$CINEMATICS_DIR" ]; then
+    echo "Suppression du dossier cinematics pour éviter les plantages"
+    rm -rf "$CINEMATICS_DIR"
+fi
+
+# Vérifier si Dofus.exe existe
+if [ ! -f "$DOFUS_EXE" ]; then
+    echo "Dofus.exe non trouvé dans $DOFUS_EXE"
+    exit 1
+fi
+
+# Exécuter Dofus avec Proton
+"$PROTON" run "$DOFUS_EXE" --port=$ZAAP_PORT --gameName=$ZAAP_GAME --gameRelease=$ZAAP_RELEASE --instanceId=$ZAAP_INSTANCE_ID --hash=$ZAAP_HASH --canLogin=$ZAAP_CAN_AUTH > /dev/null 2>&1
+
+# Capturer le code de retour de Proton
+exit $?
